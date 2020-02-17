@@ -1,6 +1,8 @@
 Fyyur
 -----
 
+[![CircleCI](https://circleci.com/gh/MaxBoykoII/FSND-Artist-Booking-Site.svg?style=svg)](https://circleci.com/gh/MaxBoykoII/FSND-Artist-Booking-Site)
+
 ### Introduction
 
 Fyyur is a musical venue and artist booking site that facilitates the discovery and bookings of shows between local performing artists and venues. This site lets you list new artists and venues, discover them, and list shows with artists as a venue owner.
