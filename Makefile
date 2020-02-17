@@ -2,7 +2,7 @@
 
 setup:
 	# Create python virtualenv
-	conda create --name fyyur
+	conda create --name fyyur python=3.7.4
 
 install:
 	# This should be run inside the virtual environment
@@ -15,3 +15,8 @@ launch:
 	export FLASK_APP=myapp
 	export FLASK_ENV=development
 	python app.py
+
+lint:
+	# Lint the python code
+	# This should be run inside the virtual environment
+	pylint --ignored-classes=SQLAlchemy --disable=R,C,W0511,W0401,W0622,W0143,E1101,W0613,E1101,W0614,W0611,W0105  app.py
