@@ -13,6 +13,8 @@ from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
 from itertools import groupby
+from sqlalchemy.sql import func
+
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -28,18 +30,18 @@ db = SQLAlchemy(app)
 # Models.
 #----------------------------------------------------------------------------#
 
-shows = db.Table('Show',
-                 db.Column(
-                     'artist_id',
-                     db.Integer,
-                     db.ForeignKey('Artist.id'),
-                     primary_key=True),
-                 db.Column(
-                     'venue_id',
-                     db.Integer,
-                     db.ForeignKey('Venue.id'),
-                     primary_key=True),
-                 db.Column('start_time', db.DateTime, nullable=False))
+Show = db.Table('Show',
+                db.Column(
+                    'artist_id',
+                    db.Integer,
+                    db.ForeignKey('Artist.id'),
+                    primary_key=True),
+                db.Column(
+                    'venue_id',
+                    db.Integer,
+                    db.ForeignKey('Venue.id'),
+                    primary_key=True),
+                db.Column('start_time', db.DateTime, nullable=False))
 
 
 class Venue(db.Model):
@@ -54,7 +56,7 @@ class Venue(db.Model):
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     artists = db.relationship(
-        'Artist', secondary=shows, backref=db.backref('Venue', lazy=True))
+        'Artist', secondary=Show, backref=db.backref('Venue', lazy=True))
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -311,6 +313,7 @@ def search_artists():
 def show_artist(artist_id):
     # shows the venue page with the given venue_id
     # TODO: replace with real venue data from the venues table, using venue_id
+    print('experiment', db.session.query(Artist).all()[0])
     data1 = {
         "id": 4,
         "name": "Guns N Petals",
@@ -474,7 +477,20 @@ def shows():
     # displays list of shows at /shows
     # TODO: replace with real venues data.
     #       num_shows should be aggregated based on number of upcoming shows per venue.
-    data = [{
+    results = db.session.query(
+        Show.c.venue_id,
+        Show.c.artist_id,
+        Venue.name.label('venue_name'),
+        Artist.name.label('artist_name'),
+        Artist.image_link.label('artist_image_link'),
+        func.to_char(Show.c.start_time, 'YYYY HH:MM:SS').label('start_time')
+    ).join(Venue, Venue.id == Show.c.venue_id) \
+     .join(Artist, Artist.id == Show.c.artist_id) \
+     .all()
+
+    data = [r._asdict() for r in results]
+    print(data)
+    """ data = [{
         "venue_id": 1,
         "venue_name": "The Musical Hop",
         "artist_id": 4,
@@ -509,7 +525,7 @@ def shows():
         "artist_name": "The Wild Sax Band",
         "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
         "start_time": "2035-04-15T20:00:00.000Z"
-    }]
+    }] """
     return render_template('pages/shows.html', shows=data)
 
 
