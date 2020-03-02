@@ -28,6 +28,19 @@ db = SQLAlchemy(app)
 # Models.
 #----------------------------------------------------------------------------#
 
+shows = db.Table('Show',
+                 db.Column(
+                     'artist_id',
+                     db.Integer,
+                     db.ForeignKey('Artist.id'),
+                     primary_key=True),
+                 db.Column(
+                     'venue_id',
+                     db.Integer,
+                     db.ForeignKey('Venue.id'),
+                     primary_key=True),
+                 db.Column('start_time', db.DateTime, nullable=False))
+
 
 class Venue(db.Model):
     __tablename__ = 'Venue'
@@ -40,6 +53,8 @@ class Venue(db.Model):
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    artists = db.relationship(
+        'Artist', secondary=shows, backref=db.backref('Venue', lazy=True))
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -128,7 +143,6 @@ def venues():
             "num_upcoming_shows": 0,
         }]
     }] """
-    #data = []
     return render_template('pages/venues.html', areas=data)
 
 
@@ -272,17 +286,8 @@ def delete_venue(venue_id):
 #  ----------------------------------------------------------------
 @app.route('/artists')
 def artists():
-    # TODO: replace with real data returned from querying the database
-    data = [{
-        "id": 4,
-        "name": "Guns N Petals",
-    }, {
-        "id": 5,
-        "name": "Matt Quevedo",
-    }, {
-        "id": 6,
-        "name": "The Wild Sax Band",
-    }]
+    data = db.session.query(Artist.id, Artist.name).all()
+
     return render_template('pages/artists.html', artists=data)
 
 
