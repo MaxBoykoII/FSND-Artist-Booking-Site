@@ -12,6 +12,7 @@ import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
+from itertools import groupby
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -65,6 +66,9 @@ class Artist(db.Model):
 #----------------------------------------------------------------------------#
 
 
+db.create_all()
+
+
 def format_datetime(value, format='medium'):
     date = dateutil.parser.parse(value)
     if format == 'full':
@@ -93,6 +97,16 @@ def index():
 def venues():
     # TODO: replace with real venues data.
     #       num_shows should be aggregated based on number of upcoming shows per venue.
+    venue_query = db.session.query(Venue).order_by(
+        Venue.city,
+        Venue.state).all()
+
+    groups = [
+        (*key, list([{'id': v.id, 'name': v.name, 'num_upcomming_shows': 0} for v in venues])) for
+        key, venues in groupby(venue_query, key=lambda v: (v.city, v.state))]
+
+    data = [{'city': g[0], 'state': g[1], 'venues': g[2]} for g in groups]
+    """ 
     data = [{
         "city": "San Francisco",
         "state": "CA",
@@ -113,7 +127,8 @@ def venues():
             "name": "The Dueling Pianos Bar",
             "num_upcoming_shows": 0,
         }]
-    }]
+    }] """
+    #data = []
     return render_template('pages/venues.html', areas=data)
 
 

@@ -19,6 +19,6 @@ launch:
 lint:
 	# Lint the python code
 	# This should be run inside the virtual environment
-	pylint --ignored-classes=SQLAlchemy --disable=R,C,W0511,W0401,W0622,W0143,E1101,W0613,E1101,W0614,W0611,W0105  app.py
+	pylint --ignored-classes=SQLAlchemy --disable=E1133,R,C,W0511,W0401,W0622,W0143,E1101,W0613,E1101,W0614,W0611,W0105  app.py
 
 all: install lint
