@@ -14,6 +14,7 @@ from flask_wtf import Form
 from forms import *
 from itertools import groupby
 from sqlalchemy.sql import func
+from flask_migrate import Migrate
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -23,6 +24,7 @@ app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 # TODO: connect to a local postgresql database
 
@@ -53,8 +55,11 @@ class Venue(db.Model):
     state = db.Column(db.String(120))
     address = db.Column(db.String(120))
     phone = db.Column(db.String(120))
+    website = db.Column(db.String(500), nullable=False)
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    seeking_talent = db.Column(db.Boolean, nullable=False, default=False)
+    seeking_description = db.Column(db.String(2500))
     artists = db.relationship(
         'Artist',
         secondary=Show,
@@ -166,9 +171,6 @@ class Artist(db.Model):
 #----------------------------------------------------------------------------#
 
 
-db.create_all()
-
-
 def format_datetime(value, format='medium'):
     date = dateutil.parser.parse(value)
     if format == 'full':
@@ -266,10 +268,10 @@ def show_venue(venue_id):
         'city': venue.city,
         'state': venue.state,
         'phone': venue.phone,
-        'website': 'https://www.themusicalhop.com',
+        'website': venue.website,
         'facebook_link': venue.facebook_link,
-        'seeking_talent': False,
-        'seeking_descrption': 'We are on the lookout for a local artist to play every two weeks. Please call us.',
+        'seeking_talent': venue.seeking_talent,
+        'seeking_description': venue.seeking_description,
         'image_link': venue.image_link,
         'past_shows': past_shows,
         'upcoming_shows': upcoming_shows,
@@ -460,8 +462,8 @@ def shows():
         Artist.image_link.label('artist_image_link'),
         func.to_char(Show.c.start_time, 'YYYY HH:MM:SS').label('start_time')
     ).join(Venue, Venue.id == Show.c.venue_id) \
-     .join(Artist, Artist.id == Show.c.artist_id) \
-     .all()
+        .join(Artist, Artist.id == Show.c.artist_id) \
+        .all()
 
     data = [r._asdict() for r in results]
 
