@@ -55,6 +55,7 @@ class Venue(db.Model):
     state = db.Column(db.String(120))
     address = db.Column(db.String(120))
     phone = db.Column(db.String(120))
+    genres = db.Column(db.String(500))
     website = db.Column(db.String(500))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
@@ -66,13 +67,8 @@ class Venue(db.Model):
         backref=db.backref('Venue', lazy=True))
 
     @property
-    def genres(self):
-        genres_str = ''
-
-        for artist in self.artists:
-            genres_str += ',' + artist.genres if artist.genres != None else ''
-
-        genres = [genre for genre in genres_str.split(',') if len(genre) > 0]
+    def genres_list(self):
+        genres = self.genres.split(',') if self.genres != None else []
 
         return genres
 
@@ -263,7 +259,7 @@ def show_venue(venue_id):
     data = {
         'id': venue.id,
         'name': venue.name,
-        'genres': venue.genres,
+        'genres': venue.genres_list,
         'address': venue.address,
         'city': venue.city,
         'state': venue.state,
