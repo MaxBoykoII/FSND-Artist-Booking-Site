@@ -307,9 +307,7 @@ def create_venue_submission():
 
         flash('Venue ' + request.form['name'] + ' was successfully listed!')
 
-    except Exception as err:
-        print(err)
-        error = True
+    except:
         db.session.rollback()
 
         flash('An error occurred. Venue ' +
